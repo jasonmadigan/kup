@@ -73,7 +73,7 @@ echo "Applying Gateway API..."
 kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.1.0/standard-install.yaml
 
 echo "Adding Jetstack helm repo and installing cert-manager..."
-helm repo add jetstack https://charts.jetstack.io --force-update
+helm repo add jetstack https://charts.jetstack.io --insecure-skip-tls-verify --force-update
 helm upgrade --install cert-manager jetstack/cert-manager \
   --namespace cert-manager \
   --create-namespace \
@@ -113,11 +113,16 @@ echo "Waiting for Istio resource to be ready..."
 kubectl wait --for=condition=Ready --timeout=300s istio/default -n istio-system
 
 echo "Adding Kuadrant helm repo and installing kuadrant-operator..."
-helm repo add kuadrant https://kuadrant.io/helm-charts/ --force-update
-# Installing a pre-release chart from a direct URL:
-helm upgrade --install kuadrant-operator https://github.com/Kuadrant/kuadrant-operator/releases/download/v1.1.0-alpha1/chart-kuadrant-operator-1.1.0-alpha1.tgz \
-  --namespace kuadrant-system \
-  --create-namespace
+helm repo add kuadrant https://kuadrant.io/helm-charts/ --insecure-skip-tls-verify --force-update
+# # Installing a pre-release chart from a direct URL:
+# helm upgrade --install kuadrant-operator https://github.com/Kuadrant/kuadrant-operator/releases/download/v1.1.0-alpha1/chart-kuadrant-operator-1.1.0-alpha1.tgz \
+#   --namespace kuadrant-system \
+#   --create-namespace
+
+helm install \
+ kuadrant-operator kuadrant/kuadrant-operator \
+ --create-namespace \
+ --namespace kuadrant-system
 
 echo "Waiting for kuadrant-operator-controller-manager deployment..."
 kubectl wait --for=condition=available --timeout=300s deployment/kuadrant-operator-controller-manager -n kuadrant-system
